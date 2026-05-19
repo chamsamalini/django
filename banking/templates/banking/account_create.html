@@ -3,7 +3,7 @@
 {% block content %}
 <section class="card">
     <h1>Register a Bank Account</h1>
-    <form method="post">
+    <form method="post" action="{% url 'banking:account_create_submit' %}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Create Account</button>
