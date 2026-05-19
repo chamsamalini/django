@@ -1,4 +1,4 @@
-# Simple Django Banking App
+# py-django
 
 This project is a beginner-friendly personal banking MVP built with Django, SQLite, server-rendered templates, pytest, and Waitress.
 
