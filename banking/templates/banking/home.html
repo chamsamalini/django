@@ -1,0 +1,9 @@
+{% extends "banking/base.html" %}
+
+{% block content %}
+<section class="card">
+    <h1>Simple Personal Banking App</h1>
+    <p>Create a practice bank account, deposit money, withdraw money, and review transaction history.</p>
+    <a href="{% url 'banking:account_create' %}">Create a bank account</a>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "banking/base.html" %}
+
+{% block content %}
+<section class="card">
+    <h1>Register a Bank Account</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Account</button>
+    </form>
+</section>
+{% endblock %}

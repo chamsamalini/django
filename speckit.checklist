@@ -1,0 +1,137 @@
+# Speckit Requirements Quality Checklist
+
+## Purpose
+
+Use this checklist to review whether the Django banking app requirements are ready for implementation in a beginner workshop setting.
+
+## Review Summary
+
+Current assessment of the existing requirement set:
+
+- Completeness: Pass
+- Testability: Pass
+- Unambiguity: Pass
+- Beginner workshop scope: Pass
+- Constitution alignment: Pass
+
+## Completeness Checklist
+
+- [x] The specification defines the core user goals: account registration, account details, deposit, withdrawal, and transaction history.
+- [x] The specification defines the MVP scope and excluded features.
+- [x] The specification identifies the core domain objects: account and transaction.
+- [x] The requirements state that new accounts start with a balance of `0.00`.
+- [x] The requirements state that successful deposits increase balance.
+- [x] The requirements state that successful withdrawals decrease balance.
+- [x] The requirements state that transaction history must display transaction type, amount, and date/time.
+- [x] The requirements state that failed operations must not appear as successful transactions.
+- [x] The clarification document resolves account number generation for the lab.
+- [x] The clarification document resolves that authentication is optional and not required for the MVP.
+- [x] The requirements state that successful account creation redirects to the account detail page.
+- [x] The requirements state that transaction history is ordered newest first.
+
+## Testability Checklist
+
+- [x] Account creation behavior is testable from the current requirements.
+- [x] Deposit success behavior is testable from the current requirements.
+- [x] Withdrawal success behavior is testable from the current requirements.
+- [x] Overdraft rejection behavior is testable from the current requirements.
+- [x] Transaction creation on successful deposit is testable from the current requirements.
+- [x] Transaction creation on successful withdrawal is testable from the current requirements.
+- [x] Failed-operation non-recording behavior is testable from the current requirements.
+- [x] Non-negative balance behavior is testable from the current requirements.
+- [x] Money validation for zero, negative, missing, and non-numeric values is testable from the current requirements.
+- [x] The requirements define response behavior for invalid submissions and successful actions through inline errors, redirect-after-success, and Django messages.
+- [x] The acceptance criteria explicitly require transaction creation coverage and no-transaction-on-failure coverage.
+
+## Unambiguity Checklist
+
+- [x] Deposit amounts must be greater than `0`.
+- [x] Withdrawal amounts must be greater than `0`.
+- [x] Balance must never become negative.
+- [x] Withdrawals greater than available balance are rejected.
+- [x] Only successful deposits and withdrawals create transaction records.
+- [x] SQLite3 is the local development database.
+- [x] The MVP uses Django templates and server-rendered views.
+- [x] The MVP excludes a REST API and JavaScript frontend.
+- [x] Authentication is not required for the MVP.
+- [x] Secrets must not be committed to the repository.
+- [x] The specification explicitly requires auto-generated account numbers.
+- [x] The specification explicitly defines inline validation errors and Django success messages.
+
+## Beginner Workshop Scope Checklist
+
+- [x] The MVP stays within Django, SQLite3, and Python only.
+- [x] The requirements avoid advanced architecture.
+- [x] The UI expectations prefer simple Django views and templates.
+- [x] Authentication is excluded, which keeps the workshop flow simpler.
+- [x] External integrations and complex banking features are excluded.
+- [x] Windows local deployment with Waitress keeps the deployment target simple.
+- [x] The requirements include the expected MVP page list for workshop implementation.
+
+## Constitution Alignment Checklist
+
+- [x] Beginner readability is reflected in the requirements and clarified decisions.
+- [x] The MVP technology boundary matches the constitution.
+- [x] Money validation rules match the constitution.
+- [x] Overdraft prevention matches the constitution.
+- [x] Transaction recording rules match the constitution.
+- [x] Automated test expectations match the constitution, with clarifications extending them appropriately.
+- [x] Secret handling matches the constitution.
+- [x] Windows local deployment with Waitress matches the constitution.
+- [x] Traceability from business rules to tests and implementation is present.
+
+## Focus Review Areas
+
+### Money Validation
+
+- [x] Deposits must reject zero amounts.
+- [x] Deposits must reject negative amounts.
+- [x] Deposits must reject missing or non-numeric values.
+- [x] Withdrawals must reject zero amounts.
+- [x] Withdrawals must reject negative amounts.
+- [x] Withdrawals must reject missing or non-numeric values.
+- [x] Invalid amount submissions must leave the balance unchanged.
+
+### Overdraft Rejection
+
+- [x] Overdraft withdrawals are explicitly rejected.
+- [x] Overdraft attempts leave the balance unchanged.
+- [x] The requirements state that balance must never become negative.
+- [x] The acceptance criteria and test requirements cover failed-operation non-recording behavior, including overdraft rejection.
+
+### Transaction History
+
+- [x] Transaction history is part of the MVP.
+- [x] Transaction history includes transaction type, amount, and date/time.
+- [x] Successful deposits appear in transaction history.
+- [x] Successful withdrawals appear in transaction history.
+- [x] Failed operations must not appear as successful transactions.
+- [x] The requirements define newest-first transaction history ordering.
+
+### Security Assumptions
+
+- [x] Secrets and tokens must not be committed.
+- [x] Environment variables or GitHub Secrets are the allowed storage locations for secrets.
+- [x] The project avoids unnecessary external infrastructure for the MVP.
+- [x] The requirements state that local deployment reads secret key, debug, and allowed hosts from environment variables.
+
+### Testability
+
+- [x] Core account creation behavior is testable.
+- [x] Core deposit behavior is testable.
+- [x] Core withdrawal behavior is testable.
+- [x] Core overdraft rejection behavior is testable.
+- [x] Transaction creation behavior is testable.
+- [x] The acceptance criteria make transaction creation and failed-operation non-recording tests mandatory.
+
+### Excluded Features
+
+- [x] Authentication is excluded from the MVP.
+- [x] REST API work is excluded from the MVP.
+- [x] JavaScript frontend work is excluded from the MVP.
+- [x] Transfers, scheduled payments, and external payment gateways are excluded.
+- [x] The scope remains appropriate for a beginner workshop.
+
+## Release Gate
+
+The requirements are synchronized with the clarified and implemented MVP behavior and are ready to use as the documentation baseline for the workshop project.

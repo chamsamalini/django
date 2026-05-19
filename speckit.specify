@@ -1,0 +1,213 @@
+# Speckit Specification
+
+## Feature
+
+Build a simple personal banking web application for workshop learners.
+
+## Goal
+
+Provide a beginner-friendly Django application where a learner can create a bank account, see their balance, deposit money, withdraw money, and review transaction history.
+
+## Scope
+
+This specification covers the MVP only.
+
+Included:
+- Bank account registration
+- Account details and current balance view
+- Deposit flow
+- Withdrawal flow
+- Transaction history view
+- Automated tests for core business rules
+
+Excluded:
+- Authentication and multi-user login
+- Interest calculation
+- Transfers between accounts
+- Scheduled payments
+- External payment gateways
+- APIs or mobile clients
+
+## Users
+
+- Workshop learner using the app locally on Windows
+- Instructor reviewing implementation and tests
+
+## Functional Requirements
+
+### 1. Register a Bank Account
+
+- The app must allow a user to create a bank account from a web form.
+- The account must store at minimum:
+  - account holder name
+  - auto-generated account number
+  - current balance
+  - created date
+- A newly created account must start with a balance of `0.00`.
+- The application must generate a simple unique account number for the lab.
+- Account creation must succeed only when required account fields are valid.
+- After successful account creation, the user must be redirected to the account detail page.
+
+### 2. View Account Details and Balance
+
+- The app must provide a page that shows account details.
+- The account page must show the current balance clearly.
+- The account page must provide clear navigation to deposit, withdraw, and transaction history actions.
+
+### 3. Deposit Money
+
+- The app must allow a user to submit a deposit amount for an account.
+- Deposit amounts must be validated before processing.
+- The app must reject amounts that are:
+  - zero
+  - negative
+  - missing
+  - not numeric
+- A successful deposit must increase the account balance by the submitted amount.
+- A successful deposit must create a transaction record of type `DEPOSIT`.
+
+### 4. Withdraw Money
+
+- The app must allow a user to submit a withdrawal amount for an account.
+- Withdrawal amounts must be validated before processing.
+- The app must reject amounts that are:
+  - zero
+  - negative
+  - missing
+  - not numeric
+- The app must reject a withdrawal when the amount is greater than the current balance.
+- A successful withdrawal must decrease the account balance by the submitted amount.
+- A successful withdrawal must create a transaction record of type `WITHDRAWAL`.
+
+### 5. View Transaction History
+
+- The app must provide a page that lists transactions for an account.
+- Each transaction entry must display at minimum:
+  - transaction type
+  - amount
+  - date and time
+- Transaction history must show successful deposits and successful withdrawals.
+- Failed deposit or withdrawal attempts must not appear as successful transactions.
+- Transaction history must display the newest transactions first.
+
+## Business Rules
+
+- BR-01: New accounts start with a zero balance.
+- BR-02: Deposit amounts must be greater than zero.
+- BR-03: Withdrawal amounts must be greater than zero.
+- BR-04: Withdrawals must not exceed the current account balance.
+- BR-05: Every successful deposit must be recorded as a transaction.
+- BR-06: Every successful withdrawal must be recorded as a transaction.
+- BR-07: Failed operations must not create successful transaction records.
+- BR-08: Core business rules must be traceable from this specification to code and tests.
+
+## Suggested Domain Model
+
+### Account
+
+- id
+- account_holder_name
+- account_number
+- balance
+- created_at
+
+### Transaction
+
+- id
+- account
+- transaction_type
+- amount
+- created_at
+
+`transaction_type` values for the MVP:
+- `DEPOSIT`
+- `WITHDRAWAL`
+
+## User Flow
+
+1. User opens the app.
+2. User creates a bank account.
+3. User lands on or navigates to the account detail page.
+4. User chooses to deposit or withdraw money.
+5. User submits an amount.
+6. The app validates the amount and applies the business rules.
+7. On success, the balance is updated and a transaction is recorded.
+8. User views transaction history.
+
+## UI Expectations
+
+- Use simple Django views and templates.
+- Keep pages readable and suitable for beginners.
+- Display validation errors in plain language.
+- Show validation failures inline on the form page.
+- Show successful deposit and withdrawal feedback using Django messages.
+- Show the current balance prominently on the account detail page.
+- Keep navigation between account detail, deposit, withdrawal, and transactions straightforward.
+
+Expected MVP pages:
+- home page
+- account registration page
+- account detail page
+- deposit page
+- withdrawal page
+- transaction history page
+
+## Validation and Error Handling
+
+- Invalid amount input must not change the account balance.
+- Overdraft attempts must not change the account balance.
+- Invalid or overdraft operations must return a clear user-facing message.
+- Server-side validation is required even if HTML form validation is present.
+- Invalid deposit and withdrawal submissions must re-render the form with inline validation errors.
+- Successful deposit and withdrawal submissions must redirect to the account detail page and show a success message.
+
+## Test Requirements
+
+Automated tests must cover:
+- account creation
+- successful deposit
+- successful withdrawal
+- overdraft rejection
+- transaction creation on successful deposit
+- transaction creation on successful withdrawal
+- no transaction creation on failed operations
+
+Recommended additional tests:
+- zero amount deposit rejection
+- negative amount deposit rejection
+- zero amount withdrawal rejection
+- negative amount withdrawal rejection
+- deposit success message rendering
+- withdrawal success message rendering
+- inline validation error rendering for invalid amount and overdraft submissions
+
+## Non-Functional Constraints
+
+- Use Django, SQLite3, and Python only for the MVP.
+- Do not commit secrets or credentials to GitHub.
+- Use environment variables or GitHub Secrets for the Django secret key and any deployment secrets.
+- Local deployment configuration should read secret key, debug mode, and allowed hosts from environment variables.
+- Keep deployment simple for local Windows use with Waitress.
+- Prefer readability over abstraction.
+
+## Traceability
+
+- BR-01 should map to account model defaults and account creation tests.
+- BR-02 and BR-03 should map to amount validation in forms/views or model methods and validation tests.
+- BR-04 should map to withdrawal logic and overdraft rejection tests.
+- BR-05 and BR-06 should map to transaction creation logic and transaction tests.
+- BR-07 should map to failure-path tests verifying no transaction record is created.
+
+## Acceptance Criteria
+
+1. A learner can create a bank account and see a starting balance of `0.00`.
+2. A learner can open an account page and view account details and current balance.
+3. A learner can deposit a positive amount and see the balance increase correctly.
+4. A learner can withdraw a valid amount within the available balance and see the balance decrease correctly.
+5. A learner cannot deposit zero or negative amounts.
+6. A learner cannot withdraw zero or negative amounts.
+7. A learner cannot withdraw more than the current balance.
+8. Every successful deposit and withdrawal appears in transaction history.
+9. Failed operations do not appear as successful transactions.
+10. Transaction history is displayed newest first.
+11. Automated tests verify account creation, deposit, withdrawal, overdraft rejection, successful transaction creation, and no transaction creation on failed operations.

@@ -1,0 +1,122 @@
+# Speckit Clarifications
+
+## Purpose
+
+This document resolves implementation ambiguities for the simple Django personal banking app before development starts.
+
+## Clarified Decisions
+
+### 1. Account Registration
+
+- Authentication is optional and is not required for the MVP.
+- A user can register a bank account through a simple Django form.
+- A newly created account must start with a balance of `0.00`.
+- Required registration data for the MVP:
+  - account holder name
+- The system generates the account number automatically.
+
+### 2. Account Number Generation
+
+- Account numbers are generated automatically by the application.
+- For the lab, the account number can use a simple unique value.
+- The generated value must be unique within the local SQLite3 database.
+- The account number does not need to follow real banking standards for the MVP.
+
+### 3. Deposit Validation
+
+- Deposit amounts must be greater than `0`.
+- Zero amounts are rejected.
+- Negative amounts are rejected.
+- Missing or non-numeric values are rejected.
+- A rejected deposit must not change the account balance.
+
+### 4. Withdrawal Validation
+
+- Withdrawal amounts must be greater than `0`.
+- Zero amounts are rejected.
+- Negative amounts are rejected.
+- Missing or non-numeric values are rejected.
+- A rejected withdrawal must not change the account balance.
+
+### 5. Overdraft Handling
+
+- The account balance must never become negative.
+- A withdrawal greater than the available balance is rejected.
+- Overdraft attempts must leave the balance unchanged.
+- Overdraft attempts must return a clear user-facing error message.
+
+### 6. Transaction Recording
+
+- Only successful deposits create a transaction record.
+- Only successful withdrawals create a transaction record.
+- Failed deposits do not create a transaction record.
+- Failed withdrawals do not create a transaction record.
+- Transaction types for the MVP are:
+  - `DEPOSIT`
+  - `WITHDRAWAL`
+
+### 7. User Messages
+
+- Validation and overdraft failures must show plain-language messages suitable for workshop learners.
+- Success messages should confirm the completed action and updated balance when practical.
+- Error messages should explain why the action failed without exposing internal details.
+
+Recommended message style:
+- Deposit success: "Deposit completed successfully."
+- Withdrawal success: "Withdrawal completed successfully."
+- Invalid amount: "Enter an amount greater than 0."
+- Overdraft rejection: "Withdrawal rejected because the amount exceeds the available balance."
+
+### 8. Test Expectations
+
+- Tests must cover account creation.
+- Tests must cover successful deposit.
+- Tests must cover successful withdrawal.
+- Tests must cover overdraft rejection.
+- Tests must cover transaction creation for successful deposits and withdrawals.
+- Tests should verify that failed deposit and withdrawal attempts do not create transactions.
+- Tests should verify that the balance never becomes negative.
+
+### 9. Deployment Assumptions
+
+- SQLite3 is used for local development.
+- The application uses Django templates.
+- The MVP does not use a REST API.
+- The MVP does not use a JavaScript frontend.
+- Local Windows deployment should remain simple and use Waitress.
+
+### 10. Secrets Handling
+
+- Secrets and tokens must not be committed to the repository.
+- Any required secret value must be read from environment variables or GitHub Secrets.
+- Local development defaults must avoid requiring committed secrets when possible.
+
+## Decisions Required Before Implementation
+
+The following decisions are now fixed and should be treated as implementation inputs:
+
+- Authentication is excluded from the MVP.
+- Account numbers are auto-generated using a simple unique lab-friendly value.
+- Balance starts at `0.00` and must never become negative.
+- Deposits and withdrawals require amounts greater than `0`.
+- Overdraft withdrawals are rejected.
+- Only successful deposits and withdrawals create transaction records.
+- The UI uses Django templates and server-rendered views.
+- The MVP uses SQLite3 locally and Waitress for simple Windows deployment.
+- Tests must include account creation, deposit, withdrawal, overdraft rejection, and transaction creation.
+- Secrets must stay out of committed files.
+
+## Traceability Updates
+
+- BR-01 maps to zero-balance account creation.
+- BR-02 maps to deposit validation greater than `0`.
+- BR-03 maps to withdrawal validation greater than `0`.
+- BR-04 maps to overdraft rejection and non-negative balances.
+- BR-05 and BR-06 maps to transaction creation only on successful operations.
+- BR-07 maps to tests verifying no transaction is created on failed operations.
+
+## Implementation Guidance
+
+- Prefer Django models, forms, views, and templates over additional layers.
+- Keep validation on the server side even if form widgets provide browser validation.
+- Make account, balance, and transaction behaviors easy to trace from spec to tests.

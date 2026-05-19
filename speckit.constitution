@@ -1,0 +1,72 @@
+# Speckit Constitution
+
+## Project
+
+Simple Django personal banking app for workshop use.
+
+## Purpose
+
+This constitution defines the non-negotiable principles for the MVP so that implementation, specification, and tests stay aligned.
+
+## Principles
+
+1. Beginner-Friendly Code
+   - Keep code readable, direct, and easy to explain to a new Django learner.
+   - Favor explicit naming, small functions, and straightforward control flow over clever abstractions.
+
+2. MVP Technology Boundary
+   - Use Django, SQLite3, and Python only for the MVP.
+   - Do not introduce additional frameworks, services, queues, ORMs, front-end build tools, or external databases.
+
+3. Money Input Validation
+   - All deposit and withdrawal amounts must be validated before processing.
+   - Reject any amount that is zero, negative, missing, malformed, or otherwise invalid.
+
+4. No Overdrafts
+   - A withdrawal must be rejected when the requested amount exceeds the current account balance.
+   - The system must never allow business logic that produces a negative balance.
+
+5. Transaction Recording
+   - Every successful deposit must create a transaction record.
+   - Every successful withdrawal must create a transaction record.
+   - Failed operations must not be recorded as successful transactions.
+
+6. Automated Test Coverage
+   - Automated tests are required for account creation, deposit, withdrawal, and overdraft rejection.
+   - MVP work is not complete until these behaviors are covered by repeatable tests.
+
+7. Secret Safety
+   - Do not hardcode secrets, credentials, or tokens in source files or committed configuration.
+   - Use environment-based configuration for any secret value required beyond local development defaults.
+
+8. Simple Local Deployment
+   - Deployment for the workshop must stay simple and work on a Windows local server using Waitress.
+   - Avoid deployment choices that add unnecessary platform or infrastructure complexity.
+
+9. Traceable Business Rules
+   - Each business rule must be visible in three places when applicable: specification, implementation, and tests.
+   - Names, test cases, and code paths should make rule tracing easy during review.
+
+10. Simple Django Structure
+    - Prefer standard Django views, forms, models, and templates.
+    - Avoid advanced architectural patterns unless a clear workshop need justifies them.
+
+## Delivery Criteria
+
+- The MVP must support account creation, deposit, withdrawal, and transaction history.
+- Deposits and withdrawals must enforce the money validation and overdraft rules.
+- Tests must prove the core banking rules described above.
+- The codebase must remain understandable to a beginner reading it for the first time.
+
+## Traceability Matrix
+
+- Rule 3 maps to amount validation in forms/views/model methods and tests that reject invalid values.
+- Rule 4 maps to withdrawal business logic and tests that reject overdrafts.
+- Rule 5 maps to transaction persistence and tests that confirm records are created only for successful operations.
+- Rule 6 maps to the automated test suite for account creation, deposit, withdrawal, and overdraft rejection.
+- Rule 9 requires feature work to reference the rule being implemented through naming, comments only when needed, and focused tests.
+
+## Change Policy
+
+- Changes to this constitution must preserve beginner readability and the MVP scope unless the workshop requirements explicitly change.
+- Any future expansion beyond these principles should be documented before implementation.

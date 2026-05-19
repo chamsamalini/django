@@ -1,0 +1,15 @@
+{% extends "banking/base.html" %}
+
+{% block content %}
+<section class="card">
+    <h1>Withdraw Money</h1>
+    <p>Account Number: {{ account.account_number }}</p>
+    <p>Current Balance: {{ account.balance }}</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Withdraw</button>
+    </form>
+    <p><a href="{% url 'banking:account_detail' account.pk %}">Back to account details</a></p>
+</section>
+{% endblock %}

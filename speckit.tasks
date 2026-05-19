@@ -1,0 +1,349 @@
+# Speckit Implementation Tasks
+
+## Purpose
+
+This task list breaks the approved specification and implementation plan into small, learner-friendly steps that can be completed and verified one at a time.
+
+## Setup
+
+1. Create the Django project folder structure.
+   Verification: `manage.py` and the project package exist.
+
+2. Create the `banking` Django app.
+   Verification: the app folder contains `models.py`, `views.py`, and `apps.py`.
+
+3. Add the `banking` app to `INSTALLED_APPS`.
+   Verification: Django starts without an app import error.
+
+4. Configure SQLite3 in Django settings for local development.
+   Verification: the default database points to a local SQLite file.
+
+5. Create `requirements.txt` with Django, pytest, pytest-django, pytest-cov, and Waitress.
+   Verification: dependencies install successfully in the virtual environment.
+
+6. Add `.gitignore` entries for `.venv`, SQLite database files, coverage output, and Python cache files.
+   Verification: local environment and cache files are ignored by Git.
+
+7. Add `.env.example` with placeholder environment variables for Django configuration.
+   Verification: the example file documents secret key, debug, and allowed hosts values without real secrets.
+
+8. Configure Django settings to read secret values from environment variables.
+   Verification: the app can start with environment-based configuration.
+
+## Models
+
+1. Create the `BankAccount` model with account holder name, account number, balance, and created date.
+   Verification: the model appears in Django migrations.
+
+2. Set the default `BankAccount.balance` to `0.00`.
+   Verification: a newly created account starts at zero in the shell or tests.
+
+3. Make `BankAccount.account_number` unique.
+   Verification: the model field is unique in the migration.
+
+4. Add automatic account number generation for new accounts using a simple unique lab-friendly value.
+   Verification: creating an account without an account number produces a unique generated value.
+
+5. Create the `Transaction` model with account, transaction type, amount, and created date.
+   Verification: the model appears in Django migrations.
+
+6. Add `DEPOSIT` and `WITHDRAWAL` transaction type choices.
+   Verification: transaction records can store only the allowed types.
+
+7. Add a `deposit()` method to `BankAccount`.
+   Verification: calling it with a valid amount increases the balance.
+
+8. Add a `withdraw()` method to `BankAccount`.
+   Verification: calling it with a valid amount decreases the balance.
+
+9. Prevent zero or negative amounts inside the deposit and withdraw business logic.
+   Verification: invalid amounts raise a validation error or are rejected consistently.
+
+10. Prevent overdraft withdrawals in the `withdraw()` method.
+    Verification: withdrawing more than the balance fails and leaves the balance unchanged.
+
+11. Create a transaction record only for successful deposits.
+    Verification: a valid deposit creates one `DEPOSIT` transaction.
+
+12. Create a transaction record only for successful withdrawals.
+    Verification: a valid withdrawal creates one `WITHDRAWAL` transaction.
+
+13. Ensure failed deposit and withdrawal attempts do not create transactions.
+    Verification: transaction count stays unchanged after failed operations.
+
+14. Set transaction ordering to newest first.
+    Verification: the most recent transaction appears first in a query result.
+
+15. Create and apply the initial migrations.
+    Verification: `python manage.py migrate` runs successfully.
+
+## Forms
+
+1. Create `BankAccountCreateForm` with account holder name.
+   Verification: the form renders and validates required input.
+
+2. Create `DepositForm` with an amount field.
+   Verification: the form renders and accepts a positive numeric value.
+
+3. Add validation to reject zero deposit amounts.
+   Verification: submitting `0` returns a form error.
+
+4. Add validation to reject negative deposit amounts.
+   Verification: submitting a negative amount returns a form error.
+
+5. Add validation to reject missing or non-numeric deposit amounts.
+   Verification: invalid input returns a form error.
+
+6. Create `WithdrawForm` with an amount field.
+   Verification: the form renders and accepts a positive numeric value.
+
+7. Add validation to reject zero withdrawal amounts.
+   Verification: submitting `0` returns a form error.
+
+8. Add validation to reject negative withdrawal amounts.
+   Verification: submitting a negative amount returns a form error.
+
+9. Add validation to reject missing or non-numeric withdrawal amounts.
+   Verification: invalid input returns a form error.
+
+10. Add overdraft validation to `WithdrawForm`.
+    Verification: withdrawing more than the current balance returns a form error.
+
+## Views
+
+1. Create a simple home view.
+   Verification: visiting `/` returns a `200` response.
+
+2. Create an account registration view.
+   Verification: visiting `/accounts/create/` shows the account form.
+
+3. Handle valid account registration submission.
+   Verification: posting valid data creates an account and redirects to the account detail page.
+
+4. Create an account detail view.
+   Verification: visiting the account detail URL shows account name, account number, and balance.
+
+5. Create a deposit view.
+   Verification: visiting the deposit URL shows the deposit form.
+
+6. Handle successful deposit submissions.
+   Verification: posting a valid amount updates the balance and redirects correctly.
+
+7. Handle invalid deposit submissions with inline errors.
+   Verification: posting invalid input redisplays the form with an error message.
+
+8. Add a success message for completed deposits.
+   Verification: a successful deposit shows a user-friendly confirmation message.
+
+9. Create a withdrawal view.
+   Verification: visiting the withdrawal URL shows the withdrawal form.
+
+10. Handle successful withdrawal submissions.
+    Verification: posting a valid amount updates the balance and redirects correctly.
+
+11. Handle invalid withdrawal submissions with inline errors.
+    Verification: posting invalid input redisplays the form with an error message.
+
+12. Handle overdraft attempts with a clear user message.
+    Verification: posting an amount above the balance shows the overdraft error and does not redirect.
+
+13. Add a success message for completed withdrawals.
+    Verification: a successful withdrawal shows a user-friendly confirmation message.
+
+14. Create a transaction history view.
+    Verification: visiting the transactions URL returns a `200` response.
+
+15. Display transactions newest first in the transaction history view.
+    Verification: the most recent transaction appears first on the page.
+
+## Templates
+
+1. Create `base.html` with a simple shared page layout.
+   Verification: child templates render using the base layout.
+
+2. Add Django messages rendering to `base.html`.
+   Verification: success messages appear after valid actions.
+
+3. Create `home.html` with a link to account registration.
+   Verification: the home page shows the create account link.
+
+4. Create `account_create.html` with the account form.
+   Verification: the form renders correctly in the browser.
+
+5. Create `account_detail.html` with account holder name, account number, and balance.
+   Verification: the detail page displays the correct account data.
+
+6. Add navigation links from account detail to deposit, withdraw, and transaction history pages.
+   Verification: each link opens the correct page.
+
+7. Create `deposit.html` with the deposit form and inline error display.
+   Verification: invalid deposit input shows an error on the page.
+
+8. Create `withdraw.html` with the withdrawal form and inline error display.
+   Verification: invalid withdrawal input shows an error on the page.
+
+9. Create `transaction_list.html` with a simple transaction table.
+   Verification: transaction rows show type, amount, and created date/time.
+
+10. Ensure the templates remain beginner-friendly and avoid unnecessary JavaScript.
+    Verification: all key flows work with server-rendered templates only.
+
+## Tests
+
+1. Configure pytest and pytest-django for the project.
+   Verification: `pytest` discovers the Django tests successfully.
+
+2. Add a test for account creation with starting balance `0.00`.
+   Verification: the test passes and proves the default balance.
+
+3. Add a test for automatic account number generation.
+   Verification: the test passes and confirms a unique generated value exists.
+
+4. Add a test for successful deposit.
+   Verification: the test passes and confirms the balance increases correctly.
+
+5. Add a test for successful withdrawal.
+   Verification: the test passes and confirms the balance decreases correctly.
+
+6. Add a test for overdraft rejection.
+   Verification: the test passes and confirms the balance stays unchanged.
+
+7. Add a test for zero deposit rejection.
+   Verification: the test passes and confirms the operation fails.
+
+8. Add a test for negative deposit rejection.
+   Verification: the test passes and confirms the operation fails.
+
+9. Add a test for zero withdrawal rejection.
+   Verification: the test passes and confirms the operation fails.
+
+10. Add a test for negative withdrawal rejection.
+    Verification: the test passes and confirms the operation fails.
+
+11. Add a test that successful deposits create one transaction.
+    Verification: the test passes and confirms one `DEPOSIT` record exists.
+
+12. Add a test that successful withdrawals create one transaction.
+    Verification: the test passes and confirms one `WITHDRAWAL` record exists.
+
+13. Add a test that failed deposit attempts do not create a transaction.
+    Verification: the test passes and confirms transaction count is unchanged.
+
+14. Add a test that failed withdrawal attempts do not create a transaction.
+    Verification: the test passes and confirms transaction count is unchanged.
+
+15. Add a view test for the account detail page.
+    Verification: the test passes and confirms the page returns `200` and shows balance data.
+
+16. Add a view test for the transaction history page.
+    Verification: the test passes and confirms the transaction list is rendered.
+
+## Coverage
+
+1. Add pytest coverage options to the test command.
+   Verification: running pytest produces terminal coverage output.
+
+2. Generate a `coverage.xml` report.
+   Verification: the XML coverage file is created after tests run.
+
+3. Restrict coverage measurement to the `banking` app.
+   Verification: the coverage report focuses on banking code rather than the whole environment.
+
+4. Check coverage for deposit, withdrawal, and overdraft branches.
+   Verification: those business-rule paths are executed by tests.
+
+5. Record a target coverage threshold in project documentation or CI settings.
+   Verification: the chosen threshold is visible in project configuration.
+
+## SonarQube Configuration
+
+1. Create `sonar-project.properties`.
+   Verification: the file exists in the project root.
+
+2. Add the project key and project name.
+   Verification: both properties are present in the Sonar configuration.
+
+3. Configure source paths for the Django project and banking app.
+   Verification: Sonar configuration points to the correct source folders.
+
+4. Configure the test path for `banking/tests`.
+   Verification: Sonar configuration points to the correct test folder.
+
+5. Configure the Python version and coverage report path.
+   Verification: the configuration references Python 3.11 and `coverage.xml`.
+
+6. Exclude migrations and virtual environment directories from analysis.
+   Verification: exclusion patterns are present in the configuration.
+
+7. Run Sonar analysis in CI once coverage output exists.
+   Verification: the Sonar step can consume the generated coverage report.
+
+## GitHub Actions
+
+1. Create `.github/workflows/ci.yml`.
+   Verification: the workflow file exists in the expected path.
+
+2. Add workflow triggers for pushes and pull requests.
+   Verification: the YAML includes `push` and `pull_request` events.
+
+3. Add a job that sets up Python 3.11.
+   Verification: the workflow uses a Python setup action with version `3.11`.
+
+4. Add a step to install dependencies from `requirements.txt`.
+   Verification: the workflow includes the install command.
+
+5. Add a step to run Django migrations in CI.
+   Verification: the workflow runs migrations before tests.
+
+6. Add a step to run pytest with coverage.
+   Verification: the workflow runs the coverage-enabled test command.
+
+7. Add a step to upload the coverage report as an artifact.
+   Verification: the workflow publishes `coverage.xml`.
+
+8. Add a Sonar analysis step using repository secrets.
+   Verification: the workflow references Sonar tokens from GitHub Secrets rather than committed values.
+
+## Windows Deployment
+
+1. Add deployment instructions to `README.md` for local Windows setup.
+   Verification: the README documents environment creation, install steps, and app startup.
+
+2. Document required environment variables for local deployment.
+   Verification: the README or `.env.example` lists secret key, debug, and allowed hosts settings.
+
+3. Document the migration command for local setup.
+   Verification: the README includes `python manage.py migrate`.
+
+4. Add the Waitress startup command to the deployment instructions.
+   Verification: the README includes the `waitress-serve` command for the WSGI app.
+
+5. Test that the app starts with Waitress on Windows.
+   Verification: the site loads successfully through the Waitress server.
+
+6. Document a simple local development command using Django's built-in server.
+   Verification: the README includes the `runserver` command for workshop use.
+
+## Suggested Build Order
+
+1. Complete Setup.
+2. Complete Models.
+3. Complete Forms.
+4. Complete Views.
+5. Complete Templates.
+6. Complete Tests.
+7. Complete Coverage.
+8. Complete SonarQube Configuration.
+9. Complete GitHub Actions.
+10. Complete Windows Deployment.
+
+## Done Criteria
+
+- A learner can create an account, view account details, deposit money, withdraw money, and view transaction history.
+- Zero and negative amounts are rejected.
+- Overdraft withdrawals are rejected.
+- Only successful deposits and withdrawals create transactions.
+- Automated tests cover the approved MVP behaviors.
+- Coverage and Sonar analysis are configured.
+- CI runs tests automatically.
+- The app can be started locally on Windows with Waitress.

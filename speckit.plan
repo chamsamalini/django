@@ -1,0 +1,430 @@
+# Speckit Implementation Plan
+
+## Purpose
+
+This plan describes how to build the beginner-friendly Django personal banking app defined in the constitution, specification, clarifications, and checklist.
+
+## Technical Direction
+
+- Python 3.11 or later
+- Django
+- SQLite3 for local development
+- Django templates for page rendering
+- pytest, pytest-django, and pytest-cov for tests and coverage
+- SonarQube or SonarCloud for code quality analysis
+- GitHub Actions for CI
+- Waitress for simple Windows local deployment
+
+## Planning Principles
+
+- Keep the code readable for workshop learners.
+- Use standard Django structure before adding extra abstraction.
+- Keep business rules visible in models, forms, views, and tests.
+- Prefer one obvious implementation path over configurable complexity.
+
+## Architecture Overview
+
+The MVP will use a single Django project with one main app that contains the banking workflow.
+
+- Project package responsibility:
+  - settings
+  - root URL configuration
+  - WSGI entry point for Waitress
+- Banking app responsibility:
+  - account registration
+  - account detail display
+  - deposit and withdrawal flows
+  - transaction history
+  - domain validation in forms and model methods
+
+This keeps the implementation easy to teach and trace in a workshop.
+
+## Proposed File Structure
+
+```text
+django-banking-app/
+├── manage.py
+├── requirements.txt
+├── pytest.ini
+├── .env.example
+├── .gitignore
+├── README.md
+├── sonar-project.properties
+├── banking_project/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+├── banking/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   ├── views.py
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_models.py
+│   │   ├── test_forms.py
+│   │   ├── test_views.py
+│   │   └── test_transactions.py
+│   ├── migrations/
+│   └── templates/
+│       └── banking/
+│           ├── base.html
+│           ├── home.html
+│           ├── account_create.html
+│           ├── account_detail.html
+│           ├── deposit.html
+│           ├── withdraw.html
+│           └── transaction_list.html
+└── .github/
+    └── workflows/
+        └── ci.yml
+```
+
+## Django Apps and Responsibilities
+
+### `banking_project`
+
+- Own global settings and project-level URLs.
+- Configure SQLite3, templates, static settings, and environment-based secrets.
+- Expose the WSGI application used by Waitress.
+
+### `banking`
+
+- Define `BankAccount` and `Transaction` models.
+- Own deposit and withdrawal validation rules.
+- Provide Django forms for account creation and money operations.
+- Provide simple class-based or function-based views.
+- Render server-side templates.
+- Hold all banking-specific tests.
+
+## Data Model
+
+### `BankAccount`
+
+Suggested fields:
+
+- `id`
+- `account_holder_name`
+- `account_number`
+- `balance`
+- `created_at`
+
+Suggested field choices:
+
+- `account_holder_name`: `CharField`
+- `account_number`: `CharField(unique=True)`
+- `balance`: `DecimalField(max_digits=12, decimal_places=2, default=0)`
+- `created_at`: `DateTimeField(auto_now_add=True)`
+
+Suggested model behavior:
+
+- Generate `account_number` automatically on create using a simple unique lab-friendly value.
+- Keep balance updates in model methods such as `deposit()` and `withdraw()` to centralize business rules.
+
+### `Transaction`
+
+Suggested fields:
+
+- `id`
+- `bank_account`
+- `transaction_type`
+- `amount`
+- `created_at`
+
+Suggested field choices:
+
+- `bank_account`: `ForeignKey(BankAccount, on_delete=models.CASCADE, related_name="transactions")`
+- `transaction_type`: `CharField` with choices `DEPOSIT` and `WITHDRAWAL`
+- `amount`: `DecimalField(max_digits=12, decimal_places=2)`
+- `created_at`: `DateTimeField(auto_now_add=True)`
+
+Suggested ordering:
+
+- Default transaction ordering should be newest first.
+
+## Validation Rules
+
+### Deposit Validation
+
+- Amount must be present.
+- Amount must be numeric.
+- Amount must be greater than `0`.
+- Invalid input must leave balance unchanged.
+- Successful deposit must create a `DEPOSIT` transaction.
+
+### Withdrawal Validation
+
+- Amount must be present.
+- Amount must be numeric.
+- Amount must be greater than `0`.
+- Amount must not exceed current balance.
+- Invalid or overdraft input must leave balance unchanged.
+- Successful withdrawal must create a `WITHDRAWAL` transaction.
+
+### Error Handling Assumption
+
+To close a current checklist gap, use this MVP behavior:
+
+- Form validation errors appear inline on deposit and withdrawal pages.
+- Success feedback uses Django messages after completed deposit or withdrawal.
+- Overdraft rejection is treated as a form validation error with a plain-language message.
+
+## Views, Forms, URLs, and Templates
+
+### Forms
+
+- `BankAccountCreateForm`
+  - collects account holder name
+- `DepositForm`
+  - accepts amount
+  - validates greater than `0`
+- `WithdrawForm`
+  - accepts amount
+  - validates greater than `0`
+  - checks against current balance
+
+### Views
+
+- `home_view`
+  - simple landing page with link to create account
+- `account_create_view`
+  - GET shows form
+  - POST creates account and redirects to account detail
+- `account_detail_view`
+  - shows account holder name, account number, current balance, and navigation links
+- `deposit_view`
+  - GET shows form
+  - POST validates and applies deposit
+  - redirects to account detail on success
+- `withdraw_view`
+  - GET shows form
+  - POST validates and applies withdrawal
+  - redirects to account detail on success
+- `transaction_list_view`
+  - lists transactions newest first
+
+### URL Plan
+
+Suggested URL pattern set:
+
+- `/`
+- `/accounts/create/`
+- `/accounts/<int:pk>/`
+- `/accounts/<int:pk>/deposit/`
+- `/accounts/<int:pk>/withdraw/`
+- `/accounts/<int:pk>/transactions/`
+
+### Template Plan
+
+- `base.html`
+  - shared page layout and Django messages
+- `home.html`
+  - workshop landing page
+- `account_create.html`
+  - account registration form
+- `account_detail.html`
+  - account summary and next actions
+- `deposit.html`
+  - deposit form with inline errors
+- `withdraw.html`
+  - withdrawal form with inline errors
+- `transaction_list.html`
+  - transaction history table
+
+## Implementation Sequence
+
+### Phase 1. Project Bootstrap
+
+- Create Django project and `banking` app.
+- Configure SQLite3.
+- Add dependencies and `.gitignore`.
+- Add environment-driven settings for secret key and debug behavior.
+
+### Phase 2. Data Layer
+
+- Build `BankAccount` and `Transaction` models.
+- Add account number generation.
+- Add model methods for `deposit()` and `withdraw()`.
+- Create initial migrations.
+
+### Phase 3. Forms and Validation
+
+- Build account creation, deposit, and withdrawal forms.
+- Put amount validation in forms.
+- Keep overdraft protection enforced in model logic as a second layer.
+
+### Phase 4. Views, URLs, and Templates
+
+- Build account creation flow.
+- Build account detail page.
+- Build deposit and withdrawal pages.
+- Build transaction history page.
+- Add plain-language user messages.
+
+### Phase 5. Test Suite
+
+- Add pytest configuration.
+- Write tests for models, forms, and views.
+- Cover core business rules before any optional improvements.
+
+### Phase 6. Quality and CI
+
+- Add coverage reporting.
+- Add SonarQube or SonarCloud configuration.
+- Add GitHub Actions workflow.
+
+### Phase 7. Local Deployment
+
+- Add Waitress run instructions.
+- Verify startup on Windows.
+- Document local deployment steps in README.
+
+## Test Strategy
+
+The test suite should stay readable and map directly to business rules.
+
+### Required Test Areas
+
+- Account creation starts with balance `0.00`.
+- Account number is generated automatically and is unique.
+- Successful deposit increases balance.
+- Successful withdrawal decreases balance.
+- Withdrawals above balance are rejected.
+- Balance never becomes negative.
+- Successful deposit creates one `DEPOSIT` transaction.
+- Successful withdrawal creates one `WITHDRAWAL` transaction.
+- Failed deposit does not create a transaction.
+- Failed withdrawal does not create a transaction.
+
+### Suggested Test Layer Split
+
+- `test_models.py`
+  - balance update rules
+  - transaction creation helpers if model-driven
+- `test_forms.py`
+  - amount validation
+  - overdraft form rejection
+- `test_views.py`
+  - redirects, messages, and page rendering
+- `test_transactions.py`
+  - transaction history visibility and ordering
+
+## Coverage Strategy
+
+- Use `pytest --cov=banking --cov-report=term-missing --cov-report=xml`.
+- Measure coverage for the `banking` app only.
+- Treat model methods, forms, and business-rule branches as the main coverage target.
+- Aim for strong branch coverage around validation and overdraft cases.
+
+Suggested minimums:
+
+- Overall coverage target: `90%`
+- Critical business-rule paths: `100%` for deposit, withdrawal, and overdraft logic
+
+## SonarQube or SonarCloud Configuration
+
+Recommended files:
+
+- `sonar-project.properties`
+
+Suggested configuration areas:
+
+- project key and project name
+- source paths for `banking_project` and `banking`
+- test paths for `banking/tests`
+- Python version
+- coverage report path `coverage.xml`
+- exclusions for migrations and virtual environments
+
+Example configuration outline:
+
+```properties
+sonar.projectKey=py-django
+sonar.projectName=py-django
+sonar.sources=banking_project,banking
+sonar.tests=banking/tests
+sonar.python.version=3.11
+sonar.python.coverage.reportPaths=coverage.xml
+sonar.exclusions=**/migrations/**,**/.venv/**,**/.venv.broken/**
+```
+
+## GitHub Actions Pipeline
+
+Workflow goals:
+
+- install dependencies
+- run pytest with coverage
+- publish coverage artifact
+- run Sonar analysis
+
+Suggested pipeline steps:
+
+1. Checkout code.
+2. Set up Python 3.11.
+3. Install dependencies from `requirements.txt`.
+4. Create `.env` values from GitHub Secrets when needed.
+5. Run migrations.
+6. Run pytest with coverage.
+7. Upload `coverage.xml` as an artifact.
+8. Run SonarCloud or SonarQube scan.
+
+Suggested workflow triggers:
+
+- push to main branches
+- pull requests
+
+## Windows Deployment Outline
+
+Local deployment target is a simple Windows-hosted server for workshop use.
+
+Suggested steps:
+
+1. Create and activate the virtual environment.
+2. Install dependencies from `requirements.txt`.
+3. Set environment variables for `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, and `DJANGO_ALLOWED_HOSTS`.
+4. Run migrations.
+5. Start the app with Waitress pointing to the WSGI application.
+
+Suggested command pattern:
+
+```powershell
+waitress-serve --listen=0.0.0.0:8000 banking_project.wsgi:application
+```
+
+Documentation should also include a local development command using Django's built-in server.
+
+## Risks
+
+- Without authentication, learners need a simple way to revisit an account after creation.
+- If balance logic is split across forms and views, business rules may drift.
+- Account number generation could become harder to reason about if made too realistic.
+- Coverage can look high while still missing branch behavior if overdraft and invalid input paths are not tested carefully.
+- Sonar analysis may fail in CI if coverage paths or secrets are misconfigured.
+
+## Assumptions
+
+- Authentication remains out of scope for the MVP.
+- The learner reaches an existing account by redirect after creation and by direct account detail URL during the workshop.
+- Transaction history is shown newest first.
+- Django messages are available in the base template.
+- One banking app is sufficient for the MVP.
+- SQLite3 performance is adequate for local workshop use.
+
+## Traceability Plan
+
+- BR-01 maps to `BankAccount.balance` default and account creation tests.
+- BR-02 maps to deposit form validation and deposit tests.
+- BR-03 maps to withdrawal form validation and withdrawal tests.
+- BR-04 maps to `withdraw()` logic and overdraft rejection tests.
+- BR-05 maps to `DEPOSIT` transaction creation and related tests.
+- BR-06 maps to `WITHDRAWAL` transaction creation and related tests.
+- BR-07 maps to failed-operation tests confirming no transaction record is created.
+
+## Ready-to-Build Outcome
+
+After this plan is applied, implementation can proceed with a small, readable Django structure that satisfies the workshop requirements, supports automated testing, and keeps quality checks in CI without expanding beyond MVP scope.

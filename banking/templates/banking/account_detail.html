@@ -1,0 +1,15 @@
+{% extends "banking/base.html" %}
+
+{% block content %}
+<section class="card">
+    <h1>Account Details</h1>
+    <p><strong>Account Holder:</strong> {{ account.account_holder_name }}</p>
+    <p><strong>Account Number:</strong> {{ account.account_number }}</p>
+    <p><strong>Current Balance:</strong> {{ account.balance }}</p>
+    <nav>
+        <a href="{% url 'banking:deposit' account.pk %}">Deposit Money</a>
+        <a href="{% url 'banking:withdraw' account.pk %}">Withdraw Money</a>
+        <a href="{% url 'banking:transaction_list' account.pk %}">View Transactions</a>
+    </nav>
+</section>
+{% endblock %}
